@@ -6,6 +6,7 @@ import ResultsTitle from "../../components/events/results-title";
 import Button from "../../components/ui/button";
 import ErrorAlert from "../../components/ui/error-alert";
 import useSWR from "swr";
+import Head from "next/head";
 
 function FilteredEventsPage(props) {
   const [loadedEvents, setLoadedEvents] = useState();
@@ -15,7 +16,7 @@ function FilteredEventsPage(props) {
 
   const { data, error } = useSWR(
     "https://nexjs-pagerendering-default-rtdb.firebaseio.com/events.json",
-    (url) => fetch(url).then(res => res.json())
+    (url) => fetch(url).then((res) => res.json())
   );
 
   useEffect(() => {
@@ -33,8 +34,20 @@ function FilteredEventsPage(props) {
     }
   }, [data]);
 
+  let pageHeadData = (
+    <Head>
+      <title>Filtered Events</title>
+      <meta name="description" content="A list of filtered events." />
+    </Head>
+  );
+
   if (!loadedEvents) {
-    return <p className="center">Loading...</p>;
+    return (
+      <Fragment>
+        {pageHeadData}
+        <p className="center">Loading...</p>
+      </Fragment>
+    );
   }
 
   const filteredYear = filterData[0];
@@ -42,6 +55,16 @@ function FilteredEventsPage(props) {
 
   const numYear = +filteredYear;
   const numMonth = +filteredMonth;
+
+  pageHeadData = (
+    <Head>
+      <title>Filtered Events</title>
+      <meta
+        name="description"
+        content={`All events for ${numMonth}/${numYear}.`}
+      />
+    </Head>
+  );
 
   if (
     isNaN(numYear) ||
@@ -54,6 +77,7 @@ function FilteredEventsPage(props) {
   ) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert>
           <p>Invalid filter. Please adjust your values.</p>
         </ErrorAlert>
@@ -89,6 +113,7 @@ function FilteredEventsPage(props) {
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert>
           <p>No events found for the chosen filter.</p>
         </ErrorAlert>
@@ -101,6 +126,7 @@ function FilteredEventsPage(props) {
 
   return (
     <Fragment>
+      {pageHeadData}
       <ResultsTitle date={new Date(numYear, numMonth - 1)} />
       <EventList events={filteredEvents} />
     </Fragment>
